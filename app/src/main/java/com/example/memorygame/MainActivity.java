@@ -1,19 +1,35 @@
 package com.example.memorygame;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
+import android.annotation.SuppressLint;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.media.Image;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.amrdeveloper.lottiedialog.LottieDialog;
+import com.shashank.sony.fancygifdialoglib.FancyGifDialog;
+import com.shashank.sony.fancygifdialoglib.FancyGifDialogListener;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,6 +39,40 @@ public class MainActivity extends AppCompatActivity {
     ImageButton[] btns;
     String[] imagenames;
     int win;
+    TextView timer;
+
+
+    public  void gameStatus(String msg,int gif){
+
+        LottieDialog dialog = new LottieDialog(this)
+                .setAnimation(gif)
+                .setAnimationRepeatCount(LottieDialog.INFINITE)
+                .setAutoPlayAnimation(true)
+                .setDialogBackground(R.color.black)
+                .setMessage(msg)
+                .setMessageColor(R.color.my)
+                .setMessageTextSize(20)
+                .setMessageColor(getResources().getColor(R.color.my))
+                .setDialogWidthPercentage(0.70f)
+                .setDialogHeightPercentage(0.60f)
+
+                .setOnDismissListener((DialogInterface.OnDismissListener) view -> {
+
+                   finish();
+                    Intent intent = new Intent(MainActivity.this,MainActivity.class);
+                    startActivity(intent);
+
+
+                })
+                ;
+
+
+        dialog.show();
+
+
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,18 +81,26 @@ public class MainActivity extends AppCompatActivity {
         win=0;
         imgarray=new int[24];
         Random rand=new Random();
-
+        timer=findViewById(R.id.timer);
         for (int i=0;i<imgarray.length;i++)
             imgarray[i]=rand.nextInt(3);
 
         btns=new ImageButton[2];
         imagenames=new String[2];
 
+        new CountDownTimer(60000, 1000) {
+            public void onTick(long millisUntilFinished) {
+                timer.setText("Time Remaining: " + millisUntilFinished / 1000);
+            }
 
-
+            public void onFinish() {
+                gameStatus("Oops Time out Try Again !",R.raw.lose);
+            }
+        }.start();
     }
 
     public void Change(View view){
+
         ++counter;
         ImageButton button=(ImageButton)view;
         int tag= Integer.parseInt(button.getTag().toString());
@@ -51,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
 
         if(imgarray[tag]==0) {
             button.setImageResource(R.drawable.b);
-//            images.put(""+tag,"b");
             imagenames[counter]="b";
         }
 
@@ -96,9 +153,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if(win==24||win==22){
-            TextView txt=findViewById(R.id.text);
-            txt.setText("You win");
-
+          gameStatus("Congratulations, You won !",R.raw.tropy);
         }
     }
 
